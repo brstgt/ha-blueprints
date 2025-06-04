@@ -1,6 +1,7 @@
   blueprint:
     name: 2 Bewegungsmelder mit Sperre
-    description: Licht über Bewegungsmelder schalten mit Sperrtaster 
+    description: Licht über Bewegungsmelder schalten mit Sperrtaster
+    source_url: https://github.com/brstgt/ha-blueprints/blob/main/automation/motion_two_bypass.yaml
     domain: automation
     author: Benjamin Roth
     input:
