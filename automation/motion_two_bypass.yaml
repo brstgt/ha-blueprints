@@ -1,124 +1,208 @@
-  blueprint:
-    name: 2 Bewegungsmelder mit Sperre
-    description: Licht über Bewegungsmelder schalten mit Sperrtaster
-    source_url: https://github.com/brstgt/ha-blueprints/blob/main/automation/motion_two_bypass.yaml
-    domain: automation
-    author: Benjamin Roth
-    input:
-      motion_entity_1:
-        name: Bewegungsmelder 1
-        selector:
+blueprint:
+  name: 2 Bewegungsmelder mit Sperre
+  description: Licht über Bewegungsmelder schalten mit Sperrtaster
+  source_url: https://github.com/brstgt/ha-blueprints/blob/main/automation/motion_two_bypass.yaml
+  domain: automation
+  author: Benjamin Roth
+  input:
+    motion_entity_1:
+      name: Bewegungsmelder 1
+      selector:
+        entity:
+          filter:
+            - domain:
+                - input_boolean
+            - device_class:
+                - motion
+              domain:
+                - binary_sensor
+          multiple: false
+    lux_entity_1:
+      name: Helligkeit Sensor 1
+      default: 0
+      selector:
+        entity:
+          domain:
+            - sensor
+          device_class:
+            - illuminance
+          multiple: false
+    lux_level_1:
+      name: Helligkeit Schwelle 1
+      description:
+        Licht geht an, wenn Helligkeit unterhalt dieser Schwelle ist
+      default: 100
+      selector:
+        number:
+          min: 0.0
+          max: 1000.0
+          step: 1.0
+          mode: slider
+    motion_entity_2:
+      name: Bewegungsmelder 1
+      selector:
+        entity:
+          filter:
+            - domain:
+                - input_boolean
+            - device_class:
+                - motion
+              domain:
+                - binary_sensor
+          multiple: false
+    lux_entity_2:
+      name: Helligkeit Sensor 2
+      default: 0
+      selector:
+        entity:
+          domain:
+            - sensor
+          device_class:
+            - illuminance
+          multiple: false
+    lux_level_2:
+      name: Helligkeit Schwelle 2
+      description:
+        Licht geht an, wenn Helligkeit unterhalt dieser Schwelle ist
+      default: 100
+      selector:
+        number:
+          min: 0.0
+          max: 1000.0
+          step: 1.0
+          mode: slider
+    lock_entity:
+      name: Sperrtaster
+      selector:
+        entity:
+          filter:
+            - domain:
+                - input_boolean
+            - domain:
+                - switch
+          multiple: false
+    light_target:
+      name: Licht
+      selector:
+        target:
           entity:
-            filter:
-              - domain: input_boolean
-              - device_class: motion
-                domain: binary_sensor
-      motion_entity_2:
-        name: Bewegungsmelder 1
-        selector:
-          entity:
-            filter:
-              - domain: input_boolean
-              - device_class: motion
-                domain: binary_sensor
-      lock_entity:
-        name: Sperrtaster
-        selector:
-          entity:
-            filter:
-              - domain: input_boolean
-              - domain: switch
-      light_target:
-        name: Licht
-        selector:
-          target:
-            entity:
-              domain: 
+            - domain:
                 - light
-      no_motion_wait:
-        name: Wait time
-        description: Time to leave the light on after last motion is detected.
-        default: 120
-        selector:
-          number:
-            min: 0
-            max: 3600
-            unit_of_measurement: seconds
-
-  mode: queued
-
-  triggers:
-    - trigger: state
-      entity_id:
-        - !input lock_entity
-      to: "on"
-      id: Sperren An
-    - trigger: state
-      entity_id:
-        - !input motion_entity_1
-        - !input motion_entity_2
-      to: "on"
-      id: BM An
-    - trigger: state
-      entity_id:
-        - !input motion_entity_1
-        - !input motion_entity_2
-      to: "off"
-      for:
-        hours: 0
-        minutes: 0
-        seconds: !input no_motion_wait
-      id: BM Aus
-    - trigger: state
-      entity_id:
-        - !input lock_entity
-      to: "off"
-      id: Sperren Aus
-
-  actions:
-    - choose:
-        - conditions:
-            - condition: trigger
-              id:
-                - Sperren An
-                - BM An
-          sequence:
-            - action: light.turn_on
-              metadata: {}
-              data: {}
-              target: !input light_target
-        - conditions:
-            - condition: trigger
-              id:
-                - Sperren Aus
-          sequence:
-            - action: light.turn_off
-              metadata: {}
-              data: {}
-              target: !input light_target
-        - conditions:
-            - condition: trigger
-              id:
-                - BM Aus
-            - condition: state
-              entity_id: !input motion_entity_1
-              state: "off"
-              for:
-                hours: 0
-                minutes: 0
-                seconds: !input no_motion_wait
-            - condition: state
-              entity_id: !input motion_entity_1
-              state: "off"
-              for:
-                hours: 0
-                minutes: 0
-                seconds: !input no_motion_wait
-            - condition: state
-              entity_id: !input lock_entity
-              state: "off"
-          sequence:
-            - action: light.turn_off
-              metadata: {}
-              data: {}
-              target: !input light_target
+    no_motion_wait:
+      name: Wait time
+      description: Time to leave the light on after last motion is detected.
+      default: 120
+      selector:
+        number:
+          min: 0.0
+          max: 3600.0
+          unit_of_measurement: seconds
+          step: 1.0
+          mode: slider
+mode: queued
+triggers:
+  - trigger: state
+    entity_id:
+      - !input lock_entity
+    to: 'on'
+    id: Sperren An
+  - trigger: state
+    entity_id:
+      - !input motion_entity_1
+      - !input motion_entity_2
+    to: 'on'
+    id: BM An
+  - trigger: state
+    entity_id:
+      - !input motion_entity_1
+      - !input motion_entity_2
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: !input no_motion_wait
+    id: BM Aus
+  - trigger: state
+    entity_id:
+      - !input lock_entity
+    to: 'off'
+    id: Sperren Aus
+  - trigger: state
+    entity_id:
+      - !input lux_entity_1
+      - !input lux_entity_2
+    id: Helligkeit
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - Sperren An
+        sequence:
+          - action: light.turn_on
+            metadata: {}
+            data: {}
+            target: !input light_target
+      - conditions:
+          - condition: trigger
+            id:
+              - BM An
+              - Helligkeit
+          - condition: or
+            conditions:
+              - condition: and
+                conditions:
+                  - condition: state
+                    entity_id: !input motion_entity_1
+                    state: "on"
+                  - condition: numeric_state
+                    entity_id:  !input lux_entity_1
+                    below: !input lux_level_1
+              - condition: and
+                conditions:
+                  - condition: state
+                    entity_id: !input motion_entity_2
+                    state: "on"
+                  - condition: numeric_state
+                    entity_id:  !input lux_entity_2
+                    below: !input lux_level_2
+        sequence:
+          - action: light.turn_on
+            metadata: {}
+            data: {}
+            target: !input light_target
+      - conditions:
+          - condition: trigger
+            id:
+              - Sperren Aus
+        sequence:
+          - action: light.turn_off
+            metadata: {}
+            data: {}
+            target: !input light_target
+      - conditions:
+          - condition: trigger
+            id:
+              - BM Aus
+          - condition: state
+            entity_id: !input motion_entity_1
+            state: 'off'
+            for:
+              hours: 0
+              minutes: 0
+              seconds: !input no_motion_wait
+          - condition: state
+            entity_id: !input motion_entity_1
+            state: 'off'
+            for:
+              hours: 0
+              minutes: 0
+              seconds: !input no_motion_wait
+          - condition: state
+            entity_id: !input lock_entity
+            state: 'off'
+        sequence:
+          - action: light.turn_off
+            metadata: {}
+            data: {}
+            target: !input light_target
