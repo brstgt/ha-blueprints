@@ -80,6 +80,8 @@ blueprint:
                 - input_boolean
             - domain:
                 - switch
+            - domain:
+                - binary_sensor
           multiple: false
     light_target:
       name: Licht
