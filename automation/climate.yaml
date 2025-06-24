@@ -1,0 +1,95 @@
+blueprint:
+  name: Klimaanlage
+  description: Klima über Zeitplan und Temparaturschwelle schalten
+  source_url: https://github.com/brstgt/ha-blueprints/blob/main/automation/climate.yaml
+  domain: automation
+  author: Benjamin Roth
+  input:
+    schedule:
+      name: Zeitplan
+      selector:
+        entity:
+          filter:
+            domain:
+              - schedule
+          multiple: false
+    climate_device:
+      name: Klimagerät
+      selector:
+        entity:
+          filter:
+          - domain:
+              - climate
+          multiple: false
+    temperature_entity:
+      name: Temperatur sensor
+      default: 0
+      selector:
+        entity:
+          domain:
+            - sensor
+          device_class:
+            - temperature
+          multiple: false
+    temperature_low:
+      name: Kühlen bis
+      description:
+        Kühlen bis diese Temperatur erreicht ist
+      default: 22.5
+      selector:
+        number:
+          min: 18.0
+          max: 28.0
+          step: 0.5
+          mode: slider
+    temperature_high:
+      name: Kühlen ab
+      description:
+        Kühlen sobald diese Temperatur erreicht ist
+      default: 24.5
+      selector:
+        number:
+          min: 18.0
+          max: 28.0
+          step: 0.5
+          mode: slider
+mode: parallel
+triggers:
+  - trigger: state
+    entity_id:
+      - !input schedule
+    to: "on"
+    id: schedule_on
+  - trigger: state
+    entity_id:
+      - !input schedule
+    to: "off"
+    id: schedule_off
+  - trigger: numeric_state
+    entity_id:
+      - !input temperature_entity
+    below: !input temperature_low
+    id: temperature_reached
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - schedule_off
+              - temperature_reached
+        sequence:
+          - action: climate.turn_off
+            metadata: {}
+            data: {}
+            target:
+              entity_id: !input climate_device
+      - conditions:
+          - condition: numeric_state
+            entity_id: !input temperature_entity
+            above: !input temperature_high
+        sequence:
+          - action: climate.turn_on
+            metadata: {}
+            data: {}
+            target:
+              entity_id: !input climate_device
