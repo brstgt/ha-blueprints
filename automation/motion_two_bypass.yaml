@@ -14,6 +14,7 @@ blueprint:
                 - input_boolean
             - device_class:
                 - motion
+                - door
               domain:
                 - binary_sensor
           multiple: false
@@ -29,8 +30,7 @@ blueprint:
           multiple: false
     lux_level_1:
       name: Helligkeit Schwelle 1
-      description:
-        Licht geht an, wenn Helligkeit unterhalt dieser Schwelle ist
+      description: Licht geht an, wenn Helligkeit unterhalt dieser Schwelle ist
       default: 100
       selector:
         number:
@@ -47,6 +47,7 @@ blueprint:
                 - input_boolean
             - device_class:
                 - motion
+                - door
               domain:
                 - binary_sensor
           multiple: false
@@ -62,8 +63,7 @@ blueprint:
           multiple: false
     lux_level_2:
       name: Helligkeit Schwelle 2
-      description:
-        Licht geht an, wenn Helligkeit unterhalt dieser Schwelle ist
+      description: Licht geht an, wenn Helligkeit unterhalt dieser Schwelle ist
       default: 100
       selector:
         number:
@@ -156,17 +156,17 @@ actions:
                 conditions:
                   - condition: state
                     entity_id: !input motion_entity_1
-                    state: "on"
+                    state: 'on'
                   - condition: numeric_state
-                    entity_id:  !input lux_entity_1
+                    entity_id: !input lux_entity_1
                     below: !input lux_level_1
               - condition: and
                 conditions:
                   - condition: state
                     entity_id: !input motion_entity_2
-                    state: "on"
+                    state: 'on'
                   - condition: numeric_state
-                    entity_id:  !input lux_entity_2
+                    entity_id: !input lux_entity_2
                     below: !input lux_level_2
         sequence:
           - action: light.turn_on
