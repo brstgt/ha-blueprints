@@ -1,0 +1,66 @@
+blueprint:
+  name: Entität verfügbar
+  description: Prüft ob eine Entität verfügbar ist und erstellt eine Meldung, falls nicht
+  source_url: https://github.com/brstgt/ha-blueprints/blob/main/automation/device_available.yaml
+  domain: automation
+  author: Benjamin Roth
+  input:
+    checked_entity:
+      name: Überwachte Entität
+      selector:
+        entity:
+          multiple: false
+    grace_time:
+      name: Max. Minuten offline
+      description:
+        Wie lange darf die Entity nicht verfügbar sein, bevor eine Meldung gesendet wird
+      default: 3
+      selector:
+        number:
+          min: 0.0
+          max: 60.0
+          step: 1.0
+          mode: slider
+    message:
+      name: Nachricht
+      description:
+        Warn Nachricht
+      default: "Cam ist offline"
+mode: single
+triggers:
+  - trigger: state
+    entity_id:
+      - !input checked_entity
+    to: unavailable
+    for:
+      hours: 0
+      minutes: !input grace_time
+      seconds: 0
+    id: unavailable
+  - trigger: state
+    entity_id:
+      - !input checked_entity
+    from: unavailable
+    id: available
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - unavailable
+        sequence:
+          - action: persistent_notification.create
+            metadata: {}
+            data:
+              message: !input message
+              notification_id: !input message
+          - action: notify.notify
+            metadata: {}
+            data:
+              message: !input message
+    default:
+      - action: persistent_notification.dismiss
+        metadata: {}
+        data:
+          notification_id: !input message
